@@ -6,18 +6,19 @@ import {
   Button,
   Typography,
 } from "@material-ui/core";
-import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
 import DeleteIcon from "@material-ui/icons/Delete";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import moment from "moment";
 import { useDispatch } from "react-redux";
 import useStyles from "./styles";
 import { deletePost, likePost } from "../../../actions/posts";
+import Likes from "./Likes";
 
 const Post = ({ post, setCurrentId }) => {
   const dispatch = useDispatch();
   const { media, overlay, card, overlay2, details, title, cardActions } =
     useStyles();
+  const user = JSON.parse(localStorage.getItem("Profile"));
 
   const handleDelete = (id) => {
     dispatch(deletePost(id));
@@ -26,6 +27,7 @@ const Post = ({ post, setCurrentId }) => {
   const handleLikePost = (id) => {
     dispatch(likePost(id));
   };
+
   return (
     <Card className={card}>
       <CardMedia
@@ -34,19 +36,22 @@ const Post = ({ post, setCurrentId }) => {
         title={post.title}
       />
       <div className={overlay}>
-        <Typography variant="h6">{post.creator}</Typography>
+        <Typography variant="h6">{post.name}</Typography>
         <Typography variant="body2">
           {moment(post.createdAt).fromNow()}
         </Typography>
       </div>
       <div className={overlay2}>
-        <Button
-          style={{ color: "white" }}
-          size="small"
-          onClick={() => setCurrentId(post._id)}
-        >
-          <MoreHorizIcon fontSize="medium" />
-        </Button>
+        {(user?.result?.googleId === post?.creator ||
+          user?.result?._id === post?.creator) && (
+          <Button
+            style={{ color: "white" }}
+            size="small"
+            onClick={() => setCurrentId(post._id)}
+          >
+            <MoreHorizIcon fontSize="medium" />
+          </Button>
+        )}
       </div>
       <div className={details}>
         <Typography variant="body2" color="textSecondary">
@@ -70,20 +75,22 @@ const Post = ({ post, setCurrentId }) => {
         <Button
           size="small"
           color="primary"
+          disabled={!user?.result}
           onClick={() => handleLikePost(post._id)}
         >
-          <ThumbUpAltIcon fontSize="small" />
-          Like &nbsp;
-          {post.likeCount}
+          <Likes post={post} user={user} />
         </Button>
-        <Button
-          size="small"
-          color="secondary"
-          onClick={() => handleDelete(post._id)}
-        >
-          <DeleteIcon fontSize="small" />
-          Delete
-        </Button>
+        {(user?.result?.googleId === post?.creator ||
+          user?.result?._id === post?.creator) && (
+          <Button
+            size="small"
+            color="secondary"
+            onClick={() => handleDelete(post._id)}
+          >
+            <DeleteIcon fontSize="small" />
+            Delete
+          </Button>
+        )}
       </CardActions>
     </Card>
   );

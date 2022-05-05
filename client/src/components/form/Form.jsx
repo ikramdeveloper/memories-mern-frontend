@@ -8,7 +8,6 @@ import { createPost, updatePost } from "../../actions/posts";
 
 const Form = ({ currentId, setCurrentId }) => {
   const initialState = {
-    creator: "",
     title: "",
     message: "",
     tags: [],
@@ -21,6 +20,7 @@ const Form = ({ currentId, setCurrentId }) => {
   );
   const dispatch = useDispatch();
   const { root, paper, form, fileInput, buttonSubmit } = useStyles();
+  const user = JSON.parse(localStorage.getItem("Profile"));
 
   useEffect(() => {
     if (post) setPostData(post);
@@ -29,9 +29,11 @@ const Form = ({ currentId, setCurrentId }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (currentId) {
-      dispatch(updatePost(currentId, postData));
+      dispatch(
+        updatePost(currentId, { ...postData, name: user?.result?.name })
+      );
     } else {
-      dispatch(createPost(postData));
+      dispatch(createPost({ ...postData, name: user?.result?.name }));
     }
     clear();
   };
@@ -40,6 +42,16 @@ const Form = ({ currentId, setCurrentId }) => {
     setCurrentId(null);
     setPostData(initialState);
   };
+
+  if (!user?.result?.name) {
+    return (
+      <Paper className={paper}>
+        <Typography variant="h6" align="center">
+          Please sign in to create or like memories
+        </Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Paper className={paper}>
@@ -52,16 +64,6 @@ const Form = ({ currentId, setCurrentId }) => {
         <Typography variant="h6">
           {currentId ? "Edit" : "Create"} your memory
         </Typography>
-        <TextField
-          name="creator"
-          variant="outlined"
-          label="Creator"
-          fullWidth
-          value={postData.creator}
-          onChange={(e) =>
-            setPostData({ ...postData, creator: e.target.value })
-          }
-        />
         <TextField
           name="title"
           variant="outlined"

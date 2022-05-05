@@ -1,15 +1,37 @@
 import axios from "axios";
 
-// const url = "http://localhost:3001/posts";
-const url = "https://memories-full-stack-mern-app.herokuapp.com/posts";
+const API = axios.create({ baseURL: "http://localhost:3001" });
 
-export const fetchPosts = () => axios.get(url);
+API.interceptors.request.use((req) => {
+  if (localStorage.getItem("Profile")) {
+    const token = JSON.parse(localStorage.getItem("Profile")).token;
+    req.headers.authorization = `Bearer ${token}`;
+  }
+  return req;
+});
 
-export const createPost = (newPost) => axios.post(url, newPost);
+// const url = "https://memories-full-stack-mern-app.herokuapp.com/posts";
 
-export const updatePost = (id, updatedPost) =>
-  axios.patch(`${url}/${id}`, updatedPost);
+const fetchPosts = () => API.get("/posts");
 
-export const deletePost = (id) => axios.delete(`${url}/${id}`);
+const createPost = (newPost) => API.post("/posts", newPost);
 
-export const likePost = (id) => axios.patch(`${url}/${id}/likePost`);
+const updatePost = (id, updatedPost) => API.patch(`/posts/${id}`, updatedPost);
+
+const deletePost = (id) => API.delete(`/posts/${id}`);
+
+const likePost = (id) => API.patch(`/posts/${id}/likePost`);
+
+const login = (formData) => API.post("/users/login", formData);
+
+const signUp = (formData) => API.post("/users/signup", formData);
+
+export {
+  fetchPosts,
+  createPost,
+  updatePost,
+  deletePost,
+  likePost,
+  login,
+  signUp,
+};
